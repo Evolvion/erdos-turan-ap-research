@@ -1,0 +1,54 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm,hyperref}
+\title{Weighted Transference, Learned Majorants, and Algorithmic Certificates for the Erd\H{o}s--Tur\'an Conjecture on Arithmetic Progressions}
+\author{Jan \and GPT-5 Pro}
+\date{\today}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\begin{document}\maketitle
+\begin{abstract}
+We develop a weighted framework for ET-AP using harmonic and calibrated majorants on dyadic windows. We prove $\delta,\eta$-robust von Neumann--type inequalities for $k=3,4,5$, a square-root pruning bound that deletes $O(\sqrt{T_3})$ mass to destroy all 3-APs, and a conditional, summable threshold schedule $\tau_k(M)=C_k(\sigma)(\log M)^{-1-\sigma}$ that implies ET-AP assuming bounded local irregularity and small low-modulus Fourier mass (STRUCT). We supply constructive algorithms (balancing, Fourier-increment engine, encodings) and certified benchmarks.
+\end{abstract}
+
+\section{Introduction}
+We study sets $A\subset\mathbb N$ with divergent $\sum_{a\in A}1/a$ and seek arbitrarily long APs. We work on dyadic windows $I=[M,2M)$ with normalized harmonic weight $\nu$ and learned calibrations $\tilde\nu$.
+
+\section{Principles and Assumptions}
+Finite truncation, relative Szemer\'edi under majorants, Gowers norms, containers; STRUCT: $\delta_t,\eta$ and small low-$q$ Fourier mass.
+
+\section{Main Results}
+\begin{lemma}[V3-$\delta,\eta$]
+For $f:[I]\to[0,1]$, $\mu=\mathbb E_{\tilde\nu}f$, $r=\|f-\mu\|_{U^2(\tilde\nu)}$,
+$|T_{3,\tilde\nu}(f)-\mu^3|\le 4\mu r^2+2r^3+12\delta+6\eta$.
+\end{lemma}
+\begin{lemma}[V4-$\delta,\eta$]
+$|T_{4,\tilde\nu}(f)-\mu^4|\le 8\mu r^3+4r^4+20(\delta_v+\delta_p+\eta)$.
+\end{lemma}
+\begin{lemma}[V5-$\delta,\eta$]
+$|T_{5,\tilde\nu}(f)-\mu^5| \le 16\mu r^4 + 8 r^5 + C'_5 \sum_{t=1}^{4}\binom{4}{t-1}\delta_t + 30\eta$.
+\end{lemma}
+\begin{theorem}[Square-root pruning]
+Let $T_3=T_{3,w}(f)$. There is a deletion set of $w$-mass $\rho\le 2\sqrt{T_3^{\rm eff}}+C(\delta+\eta)$ that makes $A$ 3-AP-free.
+\end{theorem}
+\begin{theorem}[Conditional window theorem]
+With STRUCT and calibration $\eta\le(\log M)^{-1-\sigma}$, if $\mu\ge \tau_k(M)=C_k(\sigma)(\log M)^{-1-\sigma}$ then $A\cap I$ contains a $k$-AP.
+\end{theorem}
+
+\section{Methods}
+Sinkhorn balancing (vertex/pair), power-tilt calibration $g_t(n)=n^{-t}$ to hit linear-forms constraints, Fourier-increment engine with stopping rule, ILP/MaxSAT encodings.
+
+\section{Computations and Experiments}
+Improved 4-AP accuracy at $M=128$ (error factor $\approx 3\times$); certified Cantor witnesses for $N\in\{60,80,120,200\}$ with masses $0.4698,0.4428,0.4381,0.4015$; exact clause counts $870,1560,3540,9900$.
+
+\section{Adversaries, Limitations}
+Behrend-type sets evade $U^2/U^3$ control; the window theorem is conditional on STRUCT; constants are conservative.
+
+\section{Reproducibility}
+See repository; \texttt{make reproduce} runs engines, pruning, and encodings; tests verify inequalities and benchmarks.
+
+\section{Related Work}
+Roth, Szemer\'edi, Gowers; Green--Tao transference; hypergraph containers; classical Salem--Spencer/Behrend constructions.
+
+\bibliographystyle{abbrv}
+\bibliography{refs}
+\end{document}

@@ -1,0 +1,6 @@
+numpy
+scipy
+networkx
+pyyaml
+python-sat
+pulp

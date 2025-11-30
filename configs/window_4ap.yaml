@@ -1,0 +1,10 @@
+sigma: 0.2
+Cr: 2.0
+weight:
+  type: calibrated
+  t: -0.610
+struct:
+  fourier_eps: "(log M)^(-1.2)"
+  delta_v: "(log M)^(-1.2)"
+  delta_p: "(log M)^(-1.2)"
+  eta: "(log M)^(-1.2)"
