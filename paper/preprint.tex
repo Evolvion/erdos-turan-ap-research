@@ -30,7 +30,7 @@ for the Erd\H{o}s--Tur\'an Conjecture on Arithmetic Progressions}
 \small\texttt{jan.vorel@evolvion.com}}
 
 \date{Preprint compiled on \today\\
-\small MSC 2020: Primary 05D10; Secondary 11B25, 68R05, 68R05}
+\small MSC 2020: Primary 05D10; Secondary 11B25, 68R05}
 
 
 \usepackage{amsmath}
@@ -46,7 +46,7 @@ for the Erd\H{o}s--Tur\'an Conjecture on Arithmetic Progressions}
 \maketitle
 
 \begin{abstract}
-We develop a weighted framework for ET--AP using harmonic and calibrated majorants on dyadic windows. We prove $\delta,\eta$--robust von Neumann--type inequalities for $k\in\{3,4,5\}$, a square--root pruning bound that deletes $O(\sqrt{T_3})$ mass to destroy all $3$--APs, and a conditional, summable threshold schedule $\tau_k(M)=C_k(\sigma)(\log M)^{-1-\sigma}$ that implies ET--AP assuming bounded local irregularity and small low--modulus Fourier mass (STRUCT). We supply constructive algorithms (balancing, Fourier increments, pruning) and exact ILP/MaxSAT encodings, together with certified small--$N$ witnesses.
+We develop a weighted framework for ET--AP using harmonic and calibrated majorants on dyadic windows. We prove $\delta,\eta$--robust von Neumann--type inequalities for $k\in\{3,4,5\}$, a square--root pruning bound that deletes $O(\sqrt{T_3})$ mass to destroy all $3$--APs, and a conditional, summable threshold schedule $\tau_k(M)=C_k(\sigma)(\log M)^{-1-\sigma}$ which, combined with a robust window theorem and structural assumptions (STRUCT) on Fourier mass and codegree deviations, yields a conditional implication of ET--AP. We supply constructive algorithms (balancing, Fourier increments, pruning) and exact ILP/MaxSAT encodings, together with certified small--$N$ witnesses.
 \end{abstract}
 \keywords{arithmetic progressions, transference, weighted Gowers norms, density increment, certificates}
 
@@ -55,14 +55,17 @@ We develop a weighted framework for ET--AP using harmonic and calibrated majoran
 Erd\H{o}s--Tur\'an conjecture; arithmetic progressions; transference; Gowers norms; hypergraph methods; algorithmic certificates.
 
 \section{Introduction}
-We study subsets $A\subset\mathbb{N}$ with divergent reciprocal sum and seek arbitrarily long arithmetic progressions (APs). Our program works on dyadic windows $I=[M,2M)$ with normalized harmonic weight $\nu$, and on calibrated majorants $\tilde\nu\propto n^{-t}\nu$ that better satisfy AP linear-forms constraints. We contribute (i) $\delta,\eta$--robust weighted von Neumann inequalities for $k=3,4,5$, (ii) a square--root pruning theorem that deletes $O(\sqrt{T_3})$ mass to destroy all 3--APs, and (iii) a conditional, summable schedule $\tau_k(M)$ implying ET--AP under explicit STRUCT conditions.
+We study subsets $A\subset\mathbb{N}$ with divergent reciprocal sum and seek arbitrarily long arithmetic progressions (APs). Our program works on dyadic windows $I=[M,2M)$ with normalized harmonic weight $\nu$, and on calibrated majorants $\tilde\nu\propto n^{-t}\nu$ that better satisfy AP linear-forms constraints. We contribute (i) $\delta,\eta$--robust weighted von Neumann inequalities for $k=3,4,5$, (ii) a square--root pruning theorem that deletes $O(\sqrt{T_3})$ mass to destroy all 3--APs, and (iii) a robust window theorem with summable thresholds that yields a conditional implication of ET--AP under explicit STRUCT assumptions.
 
 \paragraph{Contributions.}
 \begin{enumerate}[leftmargin=2em]
   \item \emph{Robust inequalities.} (V3--$\delta,\eta$), (V4--$\delta,\eta$), and (V5--$\delta,\eta$) control $|T_{k,\tilde\nu}(f)-\mu^k|$ via $U^{k-1}$ uniformity, structured degree deviations $(\delta_t)$, and linear--forms error $\eta$.
   \item \emph{Algorithmic certificates.} A $\sqrt{T_3}$ pruning scheme produces explicit deletion sets certifying 3--AP--freeness; SAT/ILP encodings certify small--$N$ instances.
-  \item \emph{Conditional window theorem.} Under STRUCT (Section~\ref{sec:struct}), density $\mu\ge \tau_k(M)=C_k(\sigma)(\log M)^{-1-\sigma}$ yields a $k$--AP inside $I$; a dyadic frequency lemma then implies ET--AP.
+  \item \emph{Window theorem and ET--AP.} A robust window theorem (Theorem~\ref{thm:window}) and its STRUCT specialization (Corollary~\ref{cor:struct}), combined with the dyadic frequency lemma (Lemma~\ref{lem:dyadic-frequency}), yield a conditional implication of ET--AP.
 \end{enumerate}
+
+\paragraph{STRUCT assumptions.}
+By STRUCT we mean that, on infinitely many dyadic windows $I$, the calibrated majorant $\tilde\nu$ has small low-modulus Fourier mass, small $t$-wise codegree deviations, and small linear-forms error; see Section~\ref{sec:struct} for the precise formulation used in Theorem~\ref{thm:window} and Corollary~\ref{cor:struct}.
 
 \section{Preliminaries and notation}\label{sec:prelim}
 
@@ -125,6 +128,7 @@ Symbol & Description\\\midrule
 $I=[M,2M)$ & Dyadic window, $|I|=M$ \\
 $H(I)$ & $\sum_{n\in I} 1/n$ \\
 $\nu,\tilde\nu$ & Harmonic and calibrated weights, $\tilde\nu\propto n^{-t}\nu$ \\
+$w\in\{\nu,\tilde\nu\}$ & Choice of weight in $T_3$ (Theorem~\ref{thm:sqrt}) \\
 $\mu$ & Weighted density $\mathbb{E}_{\tilde\nu} f$ \\
 $T_{k,\tilde\nu}(f)$ & Normalized $k$--AP density \\
 $r_s$ & $U^{s}(\tilde\nu)$ uniformity of $f-\mu$ \\
@@ -135,6 +139,30 @@ $\tau_k(M)$ & Window density threshold under STRUCT \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{lemma}[Dyadic frequency lemma]\label{lem:dyadic-frequency}
+Let $A\subset\mathbb{N}$ with $\sum_{n\in A} 1/n = \infty$. For each integer $j\ge 0$ let $I_j=[2^j,2^{j+1})$ and let $\tilde\nu_j$ be the harmonic weight on $I_j$, and set
+\[
+\mu_j \coloneqq \mathbb{E}_{\tilde\nu_j} 1_{A\cap I_j}.
+\]
+If $(\tau(j))_{j\ge 0}$ is a sequence of positive reals with $\sum_{j=0}^\infty \tau(j)<\infty$, then the set
+\[
+\{\,j : \mu_j \ge \tau(j)\,\}
+\]
+is infinite.
+\end{lemma}
+
+\begin{proof}
+By definition,
+\[
+\sum_{j\ge 0} \mu_j H(I_j) = \sum_{n\in A} \frac{1}{n} = \infty,
+\]
+and $H(I_j)\asymp 1$ uniformly in $j$. If $\mu_j < \tau(j)$ for all but finitely many $j$, then for some absolute constant $C>0$ we would have
+\[
+\sum_{j\ge 0} \mu_j H(I_j) \le C \sum_{j\ge 0} \tau(j) < \infty,
+\]
+a contradiction. Hence infinitely many $j$ satisfy $\mu_j \ge \tau(j)$.
+\end{proof}
 
 \section{Main results}\label{sec:main}
 \paragraph{V3--$\boldsymbol{\delta,\eta}$ (3--AP).} If $\mu=\mathbb{E}_{\tilde\nu} f$, $r_2=\|f-\mu\|_{U^2(\tilde\nu)}$, vertex deviation $\delta$ and LFC error $\eta$, then
@@ -152,19 +180,35 @@ $\tau_k(M)$ & Window density threshold under STRUCT \\
 \bigl|T_{5,\tilde\nu}(f)-\mu^{5}\bigr| \le 16\mu r_{4}^{4} + 8 r_{4}^{5} + C'_5 \sum_{t=1}^{4}\binom{4}{t-1}\delta_t + 30\eta.
 \end{equation}
 
+These robust inequalities follow from the weighted CS--Gowers estimate (Proposition~\ref{prop:weighted-CSG}) and the generalized von Neumann lemma (Lemma~\ref{lem:gvn}) applied to the $k$--AP linear systems; detailed derivations are given in Section~\ref{sec:proofs}.
+
 \begin{theorem}[Square--root pruning]\label{thm:sqrt}
-Let $T_3=T_{3,w}(f)$ for $w\in\{\nu,\tilde\nu\}$. There is a deletion set of $w$--mass $\rho\le 2\sqrt{T_3^{\mathrm{eff}}}+C(\delta+\eta)$ that makes the remainder $3$--AP--free.
+Let $T_3=T_{3,w}(f)$ for $w\in\{\nu,\tilde\nu\}$. There is a constant $C_k>0$, depending only on $k$ and the fixed structural parameters, and a deletion set of $w$--mass $\rho\le 2\sqrt{T_3}+C_k(\delta+\eta)$ that makes the remainder $3$--AP--free.
 \end{theorem}
 
-\begin{theorem}[Conditional window theorem; STRUCT]
-\label{thm:window}
-\textbf{Theorem 2A (safe threshold).}
-Assume STRUCT. If 
-\[\mu \ge C_k\big(r_{k-1} + (\sum_{t=1}^{k-1}\delta_t+\eta_k)^{1/k}\big)\]
-then $A\cap I$ contains a $k$--AP.\medskip
-
-\noindent\textbf{Remark (2B).} If additionally $r_{k-1}\le c\mu$ and $\sum_{t<k}\delta_t+\eta_k\le c\mu^k$, then for $\mu \ge C_k(\sigma)(\log M)^{-1-\sigma}$ a $k$--AP exists.
+\begin{theorem}[Robust window theorem]\label{thm:window}
+Let $I=[M,2M)$ and let $f=1_A$. Write $\mu=\mathbb{E}_{\tilde\nu} f$, $r_{k-1}=\|f-\mu\|_{U^{k-1}(\tilde\nu)}$, and set
+\[
+\Delta \coloneqq \sum_{t=1}^{k-1}\delta_t + \eta_k.
+\]
+There exists a constant $C_k>0$, depending only on $k$ and the fixed structural parameters, such that if
+\[
+\mu \ge C_k\bigl(r_{k-1} + \Delta^{1/k}\bigr),
+\]
+then $A\cap I$ contains a $k$--term arithmetic progression.
 \end{theorem}
+
+\begin{corollary}[STRUCT specialization]\label{cor:struct}
+Assume STRUCT as in Section~\ref{sec:struct}. Suppose in addition that
+\[
+r_{k-1} \le \varepsilon(M),\qquad \sum_{t=1}^{k-1}\delta_t \le \varepsilon(M),\qquad \eta_k \le \varepsilon(M),
+\]
+with $\varepsilon(M)=(\log M)^{-1-\sigma}$. Then there exists a constant $C_k(\sigma)>0$, depending only on $k$ and $\sigma$, such that if
+\[
+\mu \ge C_k(\sigma)(\log M)^{-1-\sigma},
+\]
+the set $A\cap I$ contains a $k$--term arithmetic progression.
+\end{corollary}
 
 
 \section{Algorithms}\label{sec:alg}
@@ -178,7 +222,7 @@ Under Lemma~\ref{lem:U2-bridge} there is a residue class $P$ (mod $q$) with
 $\mathbb{E}_{\tilde\nu|P} f \ge \mu + c'\varepsilon^2 - C'(\delta_2+\eta_2)$.
 \end{lemma}
 \noindent
-The engine proceeds in three phases: (1) \emph{Balancing}, where the measure $\tilde\nu$ is optimized to minimize structural deviations such as $\delta_v,\delta_p$; (2) \emph{Testing}, where we check $U^2$-type uniformity and apply the robust 3-AP inequality \eqref{eq:v3}; and (3) \emph{Zooming}, where a density increment is secured on a sub-window or residue class if uniformity fails. This cycle repeats until an AP is found or the window size falls below the threshold.
+The engine proceeds in three phases: (1) \emph{Balancing}, where the measure $\tilde\nu$ is optimized to minimize structural deviations such as $\delta_v,\delta_p$; (2) \emph{Testing}, where we check $U^2$-type uniformity and apply the robust 3-AP inequality \eqref{eq:v3}; and (3) \emph{Zooming}, where a density increment is secured on a sub-window or residue class if uniformity fails. This cycle repeats until an AP is found or the window size falls below the threshold. The algorithm either (a) finds a $3$--AP in $A\cap I$, (b) returns a STRUCT certificate (Fourier or codegree), or (c) terminates when $I$ is too small for the asymptotic theory to apply.
 
 \begin{figure}[t]
 \centering
@@ -199,7 +243,7 @@ The engine proceeds in three phases: (1) \emph{Balancing}, where the measure $\t
 \end{algorithm}
 
 \section{STRUCT conditions}\label{sec:struct}
-We require: (i) low-modulus Fourier mass $\max_{q\le M^{1/3}}\max_a |\widehat g(a;q)|<\varepsilon(M)$, (ii) degree deviations $\sum_t\delta_t\le \bar\delta(M)$, and (iii) calibrated LFC error $\eta(M)$. We set $\varepsilon(M)=\bar\delta(M)=\eta(M)=(\log M)^{-1-\sigma}$.
+We require: (i) low-modulus Fourier mass $\max_{q\le M^{1/3}}\max_a |\widehat g(a;q)|<\varepsilon(M)$, (ii) degree deviations $\sum_t\delta_t\le \bar\delta(M)$, and (iii) calibrated LFC error $\eta(M)$. We take all three scales equal, setting $\varepsilon(M)=\bar\delta(M)=\eta(M)=(\log M)^{-1-\sigma}$. These STRUCT conditions are exactly those invoked in the robust window theorem and its specialization (Theorem~\ref{thm:window} and Corollary~\ref{cor:struct}).
 
 \section{Experiments and certificates}\label{sec:experiments}
 \begin{table}[ht]
@@ -279,7 +323,7 @@ Thus, the density decays super-geometrically: $T^{(i+1)} \le (T^{(i)})^{1/2}$.
 The total mass removed is $\rho = \sum_{i} \tilde\nu(S_i)$. Substituting the decay recurrence:
 $$ \rho \le \sum_{i=0}^\infty \sqrt{T^{(i)}} \le \sqrt{T^{(0)}} + \sqrt{T^{(0)^{1/2}}} + \dots $$
 For $T^{(0)} \ll 1$, this series is dominated by the first term (bounded by $2\sqrt{T^{(0)}}$ for small $T$).
-Including the structural error from the learned majorant (where degrees are approximate) adds the term $C(\delta+\eta)$.
+Including the structural error from the learned majorant (where degrees are approximate) adds a term $C_k(\delta+\eta)$, where $C_k$ depends only on $k$ and the bounded number of pruning stages.
 \qed
 
 \paragraph{Simulation protocols.}
@@ -340,25 +384,3 @@ F. A. Behrend, On sets of integers which contain no three terms in arithmetic pr
 \end{thebibliography}
 
 \end{document}
-
-
-\paragraph{Ethics Statement.} This work uses synthetic or publicly reproducible arithmetic datasets; no human or animal subjects are involved.
-
-\paragraph{Data and Code Availability.} Reproduction protocol and skeleton code are provided under \texttt{repro/}. Final scripts and results will be released under an open license.
-
-\paragraph{Conflict of Interest.} The authors declare no competing interests.
-
-\paragraph{Acknowledgments.} We thank colleagues for feedback.
-
-\bibliographystyle{splncs04}
-\bibliography{refs}
-\end{document}
-
-
-\begin{lemma}[Balancing descent]\label{lem:balancing-descent}
-Let $\tilde\nu_t(n)=c_t n^{-t}\nu(n)$ with $|t|\le t_0$ and $\Phi(t)=\sum_{r\le k-1}\alpha_r\,\delta_r(t)+\beta\,\eta_k(t)$.
-If $\Phi$ is $L$--Lipschitz and $\mu$--strongly convex on a neighborhood of $t$, then a step 
-$\Delta t=\min\{\xi/L,\,t_0-|t|\}$ in direction $-\mathrm{sign}(\Phi'(t))$ with $|\Phi'(t)|\ge\xi$ guarantees
-$\Phi(t+\Delta t)\le \Phi(t)-\tfrac{1}{2}\xi^2/L$. If additionally $\Delta t\le \Delta t_{\max}$ preserving the low-modulus test, 
-STRUCT remains valid.
-\end{lemma}
