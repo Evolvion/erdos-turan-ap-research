@@ -1,6 +1,5 @@
 \documentclass[11pt]{article}
-% Generic article version of the preprint,
-% decoupled from the Taylor & Francis `interact` class.
+% Generic article version of the preprint.
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{booktabs}
 \usepackage{graphicx}
@@ -19,6 +18,10 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 \newtheorem{remark}{Remark}
+\newtheorem{assumption}{Assumption}
+
+% Swallow LNCS-style \keywords to avoid duplication; explicit paragraph follows.
+\providecommand{\keywords}[1]{}
 
 \title{Weighted Transference, Learned Majorants, and Algorithmic Certificates\\
 for the Erd\H{o}s--Tur\'an Conjecture on Arithmetic Progressions}
@@ -29,12 +32,24 @@ for the Erd\H{o}s--Tur\'an Conjecture on Arithmetic Progressions}
 \date{Preprint compiled on \today\\
 \small MSC 2020: Primary 05D10; Secondary 11B25, 68R05, 68R05}
 
+
+\usepackage{amsmath}
+
+\usepackage{amssymb}
+
+\usepackage{mathtools}
+
+\usepackage{tikz}
+
+\usetikzlibrary{arrows.meta,positioning}
 \begin{document}
 \maketitle
 
 \begin{abstract}
 We develop a weighted framework for ET--AP using harmonic and calibrated majorants on dyadic windows. We prove $\delta,\eta$--robust von Neumann--type inequalities for $k\in\{3,4,5\}$, a square--root pruning bound that deletes $O(\sqrt{T_3})$ mass to destroy all $3$--APs, and a conditional, summable threshold schedule $\tau_k(M)=C_k(\sigma)(\log M)^{-1-\sigma}$ that implies ET--AP assuming bounded local irregularity and small low--modulus Fourier mass (STRUCT). We supply constructive algorithms (balancing, Fourier increments, pruning) and exact ILP/MaxSAT encodings, together with certified small--$N$ witnesses.
 \end{abstract}
+\keywords{arithmetic progressions, transference, weighted Gowers norms, density increment, certificates}
+
 
 \paragraph{Keywords.}
 Erd\H{o}s--Tur\'an conjecture; arithmetic progressions; transference; Gowers norms; hypergraph methods; algorithmic certificates.
@@ -50,6 +65,43 @@ We study subsets $A\subset\mathbb{N}$ with divergent reciprocal sum and seek arb
 \end{enumerate}
 
 \section{Preliminaries and notation}\label{sec:prelim}
+
+\subsection{Weighted norms, linear-forms condition, and normalization}\label{subsec:weighted-norms}
+\paragraph{Windowed harmonic model.}
+Fix a dyadic interval $I=[M,2M)$ and $H(I)=\sum_{n\in I}1/n$. Let $\nu(n)=\mathbf{1}_I(n)\,(nH(I))^{-1}$ so $\sum_n\nu(n)=1$.
+For $|t|\le t_0$, define $\tilde\nu_t(n)=c_t n^{-t}\nu(n)$ with $c_t>0$ s.t.\ $\sum_n\tilde\nu_t(n)=1$.
+
+\paragraph{Normalized $k$--AP density.}
+For $f:I\to[0,1]$ and $k\ge3$ set
+\begin{equation}\label{eq:Tk-normalized}
+T_{k,\tilde\nu}(f)=\frac{\sum_{x,d}\prod_{j=0}^{k-1} f(x+jd)\tilde\nu(x+jd)}{\sum_{x,d}\prod_{j=0}^{k-1}\tilde\nu(x+jd)}.
+\end{equation}
+
+\paragraph{Weighted box norms.}
+For $s\ge2$ and $h:I\to\mathbb{R}$ define
+\begin{equation}\label{eq:U-s-weighted}
+\|h\|_{U^s(\tilde\nu)}^{2^s}=\frac{1}{Z_s}\!\!\sum_{x,h_1,\ldots,h_s}\left(\prod_{\omega\in\{0,1\}^s}\tilde\nu(x+\omega\cdot h)\right)\!
+\prod_{\omega\in\{0,1\}^s}\mathcal{C}^{|\omega|}h(x+\omega\cdot h),
+\end{equation}
+with $Z_s=\sum_{x,h_1,\ldots,h_s}\prod_{\omega}\tilde\nu(x+\omega\cdot h)$. Then $\|1\|_{U^s(\tilde\nu)}=1$.
+
+\begin{proposition}[Weighted CS--Gowers]\label{prop:weighted-CSG}
+\mbox{}\\
+Under $\sum_{t\le s}\delta_t+\eta_s\le \varepsilon_{\mathrm{pr}}$,
+$\big|\frac{1}{Z_s}\sum \prod_{\omega}\tilde\nu(\cdot)\prod_{\omega}\mathcal{C}^{|\omega|} h_\omega(\cdot)\big|\le \min_\omega\|h_\omega\|_{U^s(\tilde\nu)}+C_s\varepsilon_{\mathrm{pr}}$.
+Moreover $\|h\|_{U^s(\tilde\nu)}\le \|h\|_{U^{s+1}(\tilde\nu)}+C_s\varepsilon_{\mathrm{pr}}$.
+\end{proposition}
+
+\begin{lemma}[LFC for calibrated majorant]\label{lem:LFC}
+For $\tilde\nu(n)=c_t n^{-t}\nu(n)$ and AP systems of complexity $\le s$,
+$\big|\mathbb{E}_{\mathcal{L}}\prod_i\tilde\nu(L_i)-1\big|\le C(t_0,k)\big(\eta_s+\sum_{r\le s}\delta_r\big)$.
+\end{lemma}
+
+\begin{lemma}[Generalized von Neumann under a majorant]\label{lem:gvn}
+For admissible $\mathcal{L}$ of complexity $\le s$ and $g_i:I\to[-1,1]$,
+$\big|\mathbb{E}_{\mathcal{L}}\prod_i g_i(L_i)\big|\le C(\mathcal{L})\prod_i\|g_i\|_{U^s(\tilde\nu)} + C'(\mathcal{L})\varepsilon_{\mathrm{pr}}$.
+\end{lemma}
+
 Let $I=[M,2M)$, $|I|=M$. The normalized harmonic weight is
 \begin{equation}\label{eq:harmonic}
 \nu(n)=\mathbf{1}_{I}(n)\,(n H(I))^{-1},\quad H(I)=\sum_{n\in I}\frac1n.
@@ -104,24 +156,37 @@ $\tau_k(M)$ & Window density threshold under STRUCT \\
 Let $T_3=T_{3,w}(f)$ for $w\in\{\nu,\tilde\nu\}$. There is a deletion set of $w$--mass $\rho\le 2\sqrt{T_3^{\mathrm{eff}}}+C(\delta+\eta)$ that makes the remainder $3$--AP--free.
 \end{theorem}
 
-\begin{theorem}[Conditional window theorem; STRUCT]\label{thm:window}
-\textbf{Assumptions.} For fixed $\sigma>0$ the instance satisfies
-(i) $\max_{q\le M^{1/3}} \max_a |\widehat g(a;q)| \le (\log M)^{-1-\sigma}$,
-(ii) $\sum_{t=1}^{k-1}\delta_t \le (\log M)^{-1-\sigma}$,
-(iii) $\eta_k \le (\log M)^{-1-\sigma}$.
-\textbf{Conclusion.} There exists $C_k(\sigma)$ such that if
-$\mu \ge C_k(\sigma)(\log M)^{-1-\sigma}$, then $A\cap I$ contains a $k$--AP.
+\begin{theorem}[Conditional window theorem; STRUCT]
+\label{thm:window}
+\textbf{Theorem 2A (safe threshold).}
+Assume STRUCT. If 
+\[\mu \ge C_k\big(r_{k-1} + (\sum_{t=1}^{k-1}\delta_t+\eta_k)^{1/k}\big)\]
+then $A\cap I$ contains a $k$--AP.\medskip
+
+\noindent\textbf{Remark (2B).} If additionally $r_{k-1}\le c\mu$ and $\sum_{t<k}\delta_t+\eta_k\le c\mu^k$, then for $\mu \ge C_k(\sigma)(\log M)^{-1-\sigma}$ a $k$--AP exists.
 \end{theorem}
 
+
 \section{Algorithms}\label{sec:alg}
+
+\begin{lemma}[Weighted $U^2$--Fourier bridge]\label{lem:U2-bridge}
+If $\|g\|_{U^2(\tilde\nu)}\ge \varepsilon$ then $\exists\,q\le Q(\varepsilon),\,a$ with
+$\big|\mathbb{E}_{\tilde\nu}[g(n)e(an/q)]\big|\ge c\,\varepsilon^2 - C\,(\delta_2+\eta_2)$.
+\end{lemma}
+\begin{lemma}[Density increment]\label{lem:increment}
+Under Lemma~\ref{lem:U2-bridge} there is a residue class $P$ (mod $q$) with
+$\mathbb{E}_{\tilde\nu|P} f \ge \mu + c'\varepsilon^2 - C'(\delta_2+\eta_2)$.
+\end{lemma}
 \noindent
 The engine proceeds in three phases: (1) \emph{Balancing}, where the measure $\tilde\nu$ is optimized to minimize structural deviations such as $\delta_v,\delta_p$; (2) \emph{Testing}, where we check $U^2$-type uniformity and apply the robust 3-AP inequality \eqref{eq:v3}; and (3) \emph{Zooming}, where a density increment is secured on a sub-window or residue class if uniformity fails. This cycle repeats until an AP is found or the window size falls below the threshold.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.75\textwidth]{paper/algh.jpg}
-\caption{Schematic overview of the ET--AP engine (balancing, testing, and zooming phases).}
+\caption{ET--AP engine (balancing, testing, zooming).}
 \label{fig:engine}
 \end{figure}
+
 \begin{algorithm}[H]
 \caption{ET--AP--E3: Structure-or-AP engine (window $I$, weight $\tilde\nu$)}\label{alg:e3}
 \begin{algorithmic}[1]
@@ -275,3 +340,25 @@ F. A. Behrend, On sets of integers which contain no three terms in arithmetic pr
 \end{thebibliography}
 
 \end{document}
+
+
+\paragraph{Ethics Statement.} This work uses synthetic or publicly reproducible arithmetic datasets; no human or animal subjects are involved.
+
+\paragraph{Data and Code Availability.} Reproduction protocol and skeleton code are provided under \texttt{repro/}. Final scripts and results will be released under an open license.
+
+\paragraph{Conflict of Interest.} The authors declare no competing interests.
+
+\paragraph{Acknowledgments.} We thank colleagues for feedback.
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+\end{document}
+
+
+\begin{lemma}[Balancing descent]\label{lem:balancing-descent}
+Let $\tilde\nu_t(n)=c_t n^{-t}\nu(n)$ with $|t|\le t_0$ and $\Phi(t)=\sum_{r\le k-1}\alpha_r\,\delta_r(t)+\beta\,\eta_k(t)$.
+If $\Phi$ is $L$--Lipschitz and $\mu$--strongly convex on a neighborhood of $t$, then a step 
+$\Delta t=\min\{\xi/L,\,t_0-|t|\}$ in direction $-\mathrm{sign}(\Phi'(t))$ with $|\Phi'(t)|\ge\xi$ guarantees
+$\Phi(t+\Delta t)\le \Phi(t)-\tfrac{1}{2}\xi^2/L$. If additionally $\Delta t\le \Delta t_{\max}$ preserving the low-modulus test, 
+STRUCT remains valid.
+\end{lemma}
