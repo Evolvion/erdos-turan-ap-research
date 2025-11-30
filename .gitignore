@@ -1,2 +1,6 @@
 /.texcache/luatex-cache
 /src/etap/__pycache__
+preprint.aux
+preprint.log
+preprint.out
+preprint.pdf
